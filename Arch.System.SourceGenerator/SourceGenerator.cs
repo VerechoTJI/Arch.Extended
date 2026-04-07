@@ -14,8 +14,6 @@ namespace Arch.System.SourceGenerator;
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
-    private static Dictionary<ISymbol, List<IMethodSymbol>> _classToMethods { get; set; } = null!;
-
     /// <inheritdoc cref="IIncrementalGenerator.Initialize"/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -34,15 +32,15 @@ public class QueryGenerator : IIncrementalGenerator
 
     /// <summary>
     ///     Adds a <see cref="IMethodSymbol"/> to its class.
-    ///     Stores them in <see cref="_classToMethods"/>.
     /// </summary>
+    /// <param name="classToMethods">The dictionary mapping classes to their methods.</param>
     /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which will be added/mapped to its class.</param>
-    private static void AddMethodToClass(IMethodSymbol methodSymbol)
+    private static void AddMethodToClass(Dictionary<ISymbol, List<IMethodSymbol>> classToMethods, IMethodSymbol methodSymbol)
     {
-        if (!_classToMethods.TryGetValue(methodSymbol.ContainingSymbol, out var list))
+        if (!classToMethods.TryGetValue(methodSymbol.ContainingSymbol, out var list))
         {
             list = new List<IMethodSymbol>();
-            _classToMethods[methodSymbol.ContainingSymbol] = list;
+            classToMethods[methodSymbol.ContainingSymbol] = list;
         }
         list.Add(methodSymbol);
     }
@@ -89,7 +87,7 @@ public class QueryGenerator : IIncrementalGenerator
         if (methods.IsDefaultOrEmpty) return;
         
         // Generate Query methods and map them to their classes
-        _classToMethods = new(512, SymbolEqualityComparer.Default);
+        var classToMethods = new Dictionary<ISymbol, List<IMethodSymbol>>(512, SymbolEqualityComparer.Default);
         foreach (var methodSyntax in methods)
         {
             IMethodSymbol? methodSymbol = null;
@@ -104,8 +102,8 @@ public class QueryGenerator : IIncrementalGenerator
                 continue;
             }
 
-            AddMethodToClass(methodSymbol!);
-            
+            AddMethodToClass(classToMethods, methodSymbol!);
+
             var sb = new StringBuilder();
             var method = sb.AppendQueryMethod(methodSymbol!);
             var fileName = methodSymbol!.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
@@ -113,7 +111,7 @@ public class QueryGenerator : IIncrementalGenerator
         }
 
         // Creating class that calls the created methods after another.
-        foreach (var classToMethod in _classToMethods)
+        foreach (var classToMethod in classToMethods)
         {
             var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
             if (string.IsNullOrEmpty(template)) continue;
