@@ -12,12 +12,12 @@ namespace Arch.LowLevel;
 /// <typeparam name="T">The type of the managed resource.</typeparam>
 public readonly record struct Handle<T>
 {
-    
+
     /// <summary>
     ///     A null <see cref="Handle{T}"/> which is invalid and used for camparison.
     /// </summary>
     public static readonly Handle<T> NULL = new(-1);
-    
+
     /// <summary>
     ///     The id, its index inside a <see cref="Resources{T}"/> array.
     /// </summary>
@@ -76,7 +76,7 @@ public sealed class Resources<T> : IDisposable
     /// <param name="capacity">The capcity, how many items of that type should fit into the array.</param>
     public Resources(int size, int capacity = 64)
     {
-        _array = new JaggedArray<T>(160000/size, capacity);
+        _array = new JaggedArray<T>(160000 / size, capacity);
         _ids = new Queue<int>(capacity);
     }
 
@@ -103,10 +103,10 @@ public sealed class Resources<T> : IDisposable
         // Create handle
         var recyled = _ids.TryDequeue(out var id);
         id = recyled ? id : Count;
-        var handle = new Handle<T>(id);
+        Handle<T> handle = new Handle<T>(id);
 
         // Resize array and fill it in
-        _array.EnsureCapacity(id+1);
+        _array.EnsureCapacity(id + 1);
         _array.Add(id, item);
 
         Count++;
@@ -123,7 +123,7 @@ public sealed class Resources<T> : IDisposable
     {
         return handle.Id > -1 && handle.Id <= _array.Capacity;
     }
-    
+
     /// <summary>
     ///     Returns a resource for the given <see cref="Handle{T}"/>.
     /// </summary>

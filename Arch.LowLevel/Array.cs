@@ -13,14 +13,14 @@ namespace Arch.LowLevel;
 /// </summary>
 /// <typeparam name="T">The managed generic.</typeparam>
 [DebuggerTypeProxy(typeof(ArrayDebugView<>))]
-public readonly struct Array<T> 
+public readonly struct Array<T>
 {
-    
+
     /// <summary>
     ///     The static empty <see cref="Array{T}"/>.
     /// </summary>
     internal static Array<T> Empty = new(0);
-    
+
     /// <summary>
     ///     The pointer, pointing towards the first element of this <see cref="Array{T}"/>.
     /// </summary>
@@ -75,7 +75,7 @@ public readonly struct Array<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _array.DangerousGetReferenceAt(i);
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeArray{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
@@ -85,7 +85,7 @@ public readonly struct Array<T>
     {
         return MemoryMarshal.CreateSpan(ref this[0], Count);
     }
-    
+
     /// <summary>
     ///     Creates an instance of a <see cref="UnsafeEnumerator{T}"/> for ref acessing the array content.
     /// </summary>
@@ -115,7 +115,7 @@ public readonly struct Array<T>
     {
         return obj is Array<T> other && Equals(other);
     }
-    
+
     /// <summary>
     ///     Checks for equality.
     /// </summary>
@@ -146,7 +146,7 @@ public readonly struct Array<T>
     {
         return _array.GetHashCode();
     }
-    
+
     /// <summary>
     ///     Converts an <see cref="Array{T}"/> into a generic array.
     /// </summary>
@@ -157,7 +157,7 @@ public readonly struct Array<T>
     {
         return instance._array;
     }
-    
+
     /// <summary>
     ///     Converts an <see cref="Array{T}"/> into a generic array.
     /// </summary>
@@ -168,7 +168,7 @@ public readonly struct Array<T>
     {
         return new Array<T>(instance);
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeArray{T}"/> to a string.
     /// </summary>
@@ -176,7 +176,7 @@ public readonly struct Array<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString()
     {
-        var items = new StringBuilder();
+        StringBuilder items = new StringBuilder();
         foreach (ref var item in this)
         {
             items.Append($"{item},");
@@ -202,7 +202,7 @@ public unsafe struct Array
     {
         return Array<T>.Empty;
     }
-    
+
     /// <summary>
     ///  Copies the a part of the <see cref="UnsafeArray{T}"/> to the another <see cref="UnsafeArray{T}"/>.
     /// </summary>
@@ -224,11 +224,11 @@ public unsafe struct Array
     /// <param name="source">The <see cref="UnsafeArray{T}"/> instance.</param>
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Fill<T>(ref Array<T> source, in T value = default!) 
+    public static void Fill<T>(ref Array<T> source, in T value = default!)
     {
         source.AsSpan().Fill(value);
     }
-    
+
     /// <summary>
     ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <paramref name="newCapacity"/>.
     /// </summary>
@@ -237,11 +237,11 @@ public unsafe struct Array
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The new resized <see cref="UnsafeArray{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Array<T> Resize<T>(ref Array<T> source, int newCapacity) 
+    public static Array<T> Resize<T>(ref Array<T> source, int newCapacity)
     {
         // Create a new array with the new capacity
-        var destination = new Array<T>(newCapacity);
-    
+        Array<T> destination = new Array<T>(newCapacity);
+
         // Calculate the number of elements to copy
         var lengthToCopy = Math.Min(source.Length, newCapacity);
         Copy(ref source, 0, ref destination, 0, lengthToCopy);
@@ -263,7 +263,7 @@ internal class ArrayDebugView<T> where T : unmanaged
     {
         get
         {
-            var items = new T[_entity.Count];
+            T[] items = new T[_entity.Count];
             _entity.AsSpan().CopyTo(items);
             return items;
         }

@@ -11,20 +11,20 @@ namespace Arch.LowLevel;
 /// </summary>
 /// <typeparam name="T">The generic type stored in the stack.</typeparam>
 [DebuggerTypeProxy(typeof(UnsafeStackDebugView<>))]
-public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unmanaged  
+public unsafe struct UnsafeStack<T> : IEnumerable<T>, IDisposable where T : unmanaged
 {
     private const int DefaultCapacity = 4;
-    
+
     /// <summary>
     ///     The stack pointer.
     /// </summary>
     private UnsafeArray<T> _stack;
-    
+
     /// <summary>
     ///     Its capacity.
     /// </summary>
     private int _capacity;
-    
+
     /// <summary>
     ///     Its count.
     /// </summary>
@@ -93,7 +93,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
         {
             EnsureCapacity(_capacity * 2);
         }
-        
+
         _stack[_count] = value;
         _count++;
     }
@@ -130,7 +130,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
 
         return ref _stack[_count - 1];
     }
-    
+
     /// <summary>
     ///     Ensures the capacity of this <see cref="UnsafeStack{T}"/> instance and resizes it accordingly.
     /// </summary>
@@ -150,8 +150,8 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
         }
 
         // Create new stack and copy elements
-        var newStack = new UnsafeArray<T>(newCapacity);
-        UnsafeArray.Copy(ref _stack, 0, ref newStack,0, _count);
+        UnsafeArray<T> newStack = new UnsafeArray<T>(newCapacity);
+        UnsafeArray.Copy(ref _stack, 0, ref newStack, 0, _count);
         _stack.Dispose();
 
         _capacity = newCapacity;
@@ -169,12 +169,12 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
         {
             return;
         }
-        
+
         // Create new stack and copy elements
-        var newStack = new UnsafeArray<T>(newCapacity);
-        UnsafeArray.Copy(ref _stack, 0, ref newStack,0, _count);
+        UnsafeArray<T> newStack = new UnsafeArray<T>(newCapacity);
+        UnsafeArray.Copy(ref _stack, 0, ref newStack, 0, _count);
         _stack.Dispose();
-        
+
         _capacity = newCapacity;
         _stack = newStack;
     }
@@ -188,7 +188,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     {
         _count = 0;
     }
-    
+
     /// <summary>
     ///     Disposes this instance and releases its memory. 
     /// </summary>
@@ -197,7 +197,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     {
         _stack.Dispose();
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeStack{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
@@ -207,7 +207,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     {
         return new Span<T>(_stack, Count);
     }
-    
+
     /// <summary>
     ///     Creates an instance of a <see cref="UnsafeEnumerator{T}"/> for ref acessing the list content.
     /// </summary>
@@ -237,7 +237,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     {
         return new ReverseIEnumerator<T>(_stack, Count);
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeStack{T}"/> to a string.
     /// </summary>
@@ -245,7 +245,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly override string ToString()
     {
-        var items = new StringBuilder();
+        StringBuilder items = new StringBuilder();
         foreach (ref var item in this)
         {
             items.Append($"{item},");
@@ -269,7 +269,7 @@ internal class UnsafeStackDebugView<T> where T : unmanaged
     {
         get
         {
-            var items = new T[_entity.Count];
+            T[] items = new T[_entity.Count];
             _entity.AsSpan().CopyTo(items);
             return items;
         }

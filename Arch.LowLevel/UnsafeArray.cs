@@ -18,7 +18,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     ///     The static empty <see cref="UnsafeArray{T}"/>.
     /// </summary>
     internal static UnsafeArray<T> Empty = new(null, 0);
-    
+
     /// <summary>
     ///     The pointer, pointing towards the first element of this <see cref="UnsafeArray{T}"/>.
     /// </summary>
@@ -38,7 +38,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 #endif
         Count = count;
     }
-    
+
     /// <summary>
     ///     Creates an instance of the <see cref="UnsafeArray{T}"/> by a pointer.
     /// </summary>
@@ -100,7 +100,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     {
         return new Span<T>(_ptr, Count);
     }
-    
+
     /// <summary>
     ///     Creates an instance of a <see cref="UnsafeEnumerator{T}"/> for ref acessing the array content.
     /// </summary>
@@ -131,7 +131,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
         return obj is UnsafeArray<T> other && Equals(other);
     }
 
-    
+
     /// <summary>
     ///     Checks for equality.
     /// </summary>
@@ -165,7 +165,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
             return (unchecked((int)(long)_ptr) * 397) ^ Count;
         }
     }
-    
+
     /// <summary>
     ///     Converts an <see cref="UnsafeArray{T}"/> into a void pointer.
     /// </summary>
@@ -176,7 +176,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     {
         return (void*)instance._ptr;
     }
-    
+
     /// <summary>
     ///     Converts an <see cref="UnsafeArray{T}"/> into a generic pointer.
     /// </summary>
@@ -187,7 +187,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     {
         return instance._ptr;
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeArray{T}"/> to a string.
     /// </summary>
@@ -195,7 +195,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString()
     {
-        var items = new StringBuilder();
+        StringBuilder items = new StringBuilder();
         foreach (ref var item in this)
         {
             items.Append($"{item},");
@@ -220,7 +220,7 @@ public unsafe struct UnsafeArray
     {
         return UnsafeArray<T>.Empty;
     }
-    
+
     /// <summary>
     ///  Copies the a part of the <see cref="UnsafeArray{T}"/> to the another <see cref="UnsafeArray{T}"/>.
     /// </summary>
@@ -250,7 +250,7 @@ public unsafe struct UnsafeArray
     {
         source.AsSpan().Fill(value);
     }
-    
+
     /// <summary>
     ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <paramref name="newCapacity"/>.
     /// </summary>
@@ -261,7 +261,7 @@ public unsafe struct UnsafeArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static UnsafeArray<T> Resize<T>(ref UnsafeArray<T> source, int newCapacity) where T : unmanaged
     {
-        var destination = new UnsafeArray<T>(newCapacity);
+        UnsafeArray<T> destination = new UnsafeArray<T>(newCapacity);
         Copy(ref source, 0, ref destination, 0, Math.Min(source.Length, destination.Length));
 
         source.Dispose();
@@ -283,7 +283,7 @@ internal class UnsafeArrayDebugView<T> where T : unmanaged
     {
         get
         {
-            var items = new T[_entity.Count];
+            T[] items = new T[_entity.Count];
             _entity.AsSpan().CopyTo(items);
             return items;
         }

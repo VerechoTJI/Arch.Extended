@@ -46,7 +46,7 @@ public record struct Bucket<T>
     ///     The items array.
     /// </summary>
     internal readonly T[] Array = global::System.Array.Empty<T>();
-    
+
     /// <summary>
     ///     Creates an instance of the <see cref="Bucket{T}"/>.
     /// </summary>
@@ -55,7 +55,7 @@ public record struct Bucket<T>
     {
         Array = new T[capacity];
     }
-    
+
     /// <summary>
     ///     The amount of items in this <see cref="Bucket{T}"/>.
     /// </summary>
@@ -76,7 +76,7 @@ public record struct Bucket<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Count <= 0;
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -86,7 +86,7 @@ public record struct Bucket<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref Array.DangerousGetReferenceAt(i);
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="Bucket{T}"/> and sets all values to the <paramref name="filler"/>.
     /// </summary>
@@ -108,7 +108,7 @@ public class JaggedArray<T>
     ///     The <see cref="Bucket{T}"/> size in items.
     /// </summary>
     private readonly int _bucketSize;
-    
+
     /// <summary>
     ///     The <see cref="Bucket{T}"/> size in items - 1.
     /// </summary>
@@ -118,7 +118,7 @@ public class JaggedArray<T>
     ///     The <see cref="_bucketSize"/> is always a value the power of 2, therefore we can use a bitshift for the division during the index calculation. 
     /// </summary>
     private readonly int _bucketSizeShift;
-    
+
     /// <summary>
     ///     The allocated <see cref="Bucket{T}"/>s.
     /// </summary>
@@ -128,7 +128,7 @@ public class JaggedArray<T>
     ///     The filler, the default value.
     /// </summary>
     private readonly T _filler;
-    
+
     /// <summary>
     ///     Creates an instance of the <see cref="JaggedArray{T}"/>.
     /// </summary>
@@ -139,14 +139,14 @@ public class JaggedArray<T>
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
         _bucketSizeShift = (int)Math.Log(_bucketSize, 2);
-        _buckets = new Array<Bucket<T>>(capacity/_bucketSize + 1);
-        
+        _buckets = new Array<Bucket<T>>(capacity / _bucketSize + 1);
+
         _filler = default!;
 
         // Fill buckets
         for (var i = 0; i < _buckets.Length; i++)
         {
-            var bucket = new Bucket<T>(_bucketSize);
+            Bucket<T> bucket = new Bucket<T>(_bucketSize);
             SetBucket(i, in bucket);
             bucket.Clear(_filler);
         }
@@ -163,19 +163,19 @@ public class JaggedArray<T>
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
         _bucketSizeShift = (int)Math.Log(_bucketSize, 2);
-        _buckets = new Bucket<T>[capacity/_bucketSize + 1];
-        
+        _buckets = new Bucket<T>[capacity / _bucketSize + 1];
+
         _filler = filler;
 
         // Fill buckets
         for (var i = 0; i < _buckets.Length; i++)
         {
-            var bucket = new Bucket<T>(_bucketSize);
+            Bucket<T> bucket = new Bucket<T>(_bucketSize);
             SetBucket(i, in bucket);
             bucket.Clear(_filler);
         }
     }
-    
+
     /// <summary>
     ///     The capacity, the total amount of items. 
     /// </summary>
@@ -195,7 +195,7 @@ public class JaggedArray<T>
     public void Add(int index, in T item)
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         ref var bucket = ref GetBucket(bucketIndex);
         bucket[itemIndex] = item;
         bucket.Count++;
@@ -209,12 +209,12 @@ public class JaggedArray<T>
     public void Remove(int index)
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         ref var bucket = ref GetBucket(bucketIndex);
         bucket[itemIndex] = _filler;
         bucket.Count--;
     }
-    
+
     /// <summary>
     ///     Trys to get an item from its index.
     /// </summary>
@@ -244,7 +244,7 @@ public class JaggedArray<T>
         value = item;
         return true;
     }
-    
+
     /// <summary>
     ///     Trys to get an item from its index.
     /// </summary>
@@ -258,9 +258,9 @@ public class JaggedArray<T>
         if (index < 0 || index >= Capacity)
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
-        
+
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
         ref var item = ref GetBucket(bucketIndex)[itemIndex];
 
@@ -268,13 +268,13 @@ public class JaggedArray<T>
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
 
         @bool = true;
-        return ref item!; 
+        return ref item!;
     }
-    
+
     /// <summary>
     ///     Checks if the value at the given index exists.
     /// </summary>
@@ -287,7 +287,7 @@ public class JaggedArray<T>
         {
             return false;
         }
-        
+
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
         ref var item = ref GetBucket(bucketIndex)[itemIndex];
 
@@ -313,7 +313,7 @@ public class JaggedArray<T>
 
         for (var i = length; i < _buckets.Length; i++)
         {
-            var bucket = new Bucket<T>(_bucketSize);
+            Bucket<T> bucket = new Bucket<T>(_bucketSize);
             SetBucket(i, in bucket);
             bucket.Clear(_filler);
         }
@@ -327,7 +327,7 @@ public class JaggedArray<T>
     {
         // Count how many of the last buckets are empty, to trim them
         var count = 0;
-        for (var i = _buckets.Length-1; i >= 0; i--)
+        for (var i = _buckets.Length - 1; i >= 0; i--)
         {
             ref var bucket = ref GetBucket(i);
             if (!bucket.IsEmpty)
@@ -338,7 +338,7 @@ public class JaggedArray<T>
             count++;
         }
 
-        var buckets = _buckets.Length-count;
+        var buckets = _buckets.Length - count;
         _buckets = Array.Resize(ref _buckets, buckets);
     }
 
@@ -357,7 +357,7 @@ public class JaggedArray<T>
         bucketIndex = id >> _bucketSizeShift;
         itemIndex = id & _bucketSizeMinusOne;
     }
-    
+
     /// <summary>
     ///     Returns the <see cref="Bucket{T}"/> from the <see cref="_buckets"/> at the given index.
     /// </summary>
@@ -379,7 +379,7 @@ public class JaggedArray<T>
     {
         _buckets[index] = bucket;
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -393,7 +393,7 @@ public class JaggedArray<T>
             return ref GetBucket(bucketIndex)[itemIndex];
         }
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="JaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
     /// </summary>
@@ -406,7 +406,7 @@ public class JaggedArray<T>
             {
                 continue;
             }
-            
+
             bucket.Clear(_filler);
         }
     }

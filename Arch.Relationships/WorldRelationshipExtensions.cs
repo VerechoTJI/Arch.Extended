@@ -5,7 +5,7 @@ using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 
-[assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
+[assembly: InternalsVisibleTo("Arch.Relationships.Tests")]
 namespace Arch.Relationships;
 
 /// <summary>
@@ -14,7 +14,7 @@ namespace Arch.Relationships;
 /// </summary>
 public static class WorldRelationshipExtensions
 {
-    
+
 #if EVENTS
     
     /// <summary>
@@ -83,7 +83,7 @@ public static class WorldRelationshipExtensions
         ref var buffer = ref world.AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
 
-        var targetComp = new InRelationship(Component<Relationship<T>>.ComponentType);
+        InRelationship targetComp = new InRelationship(Component<Relationship<T>>.ComponentType);
         ref var targetBuffer = ref world.AddOrGetRelationships<InRelationship>(target);
         targetBuffer.Add(in targetComp, source);
     }

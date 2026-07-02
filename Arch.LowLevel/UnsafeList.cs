@@ -17,7 +17,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     ///     The array pointer.
     /// </summary>
     private UnsafeArray<T> _array;
-    
+
     /// <summary>
     ///     Creates an instance of the <see cref="UnsafeList{T}"/>.
     /// </summary>
@@ -47,8 +47,8 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get; 
-        
+        get;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private set;
     }
@@ -59,8 +59,8 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     public int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get; 
-        
+        get;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private set;
     }
@@ -89,7 +89,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         _array[Count] = item;
         Count++;
     }
-    
+
     /// <summary>
     ///     Inserts an item at the given index. 
     /// </summary>
@@ -101,11 +101,11 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         // Inserting to end of the list is legal.
         if ((uint)index > (uint)Count)
         {
-            throw new ArgumentOutOfRangeException(nameof(index)); 
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
-        
+
         // Resize if the list is actually full
-        if (Capacity == Count) 
+        if (Capacity == Count)
         {
             EnsureCapacity(Capacity + 1);
         }
@@ -119,7 +119,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
 
             UnsafeArray.Copy(ref _array, index, ref _array, index + 1, Count - index);
         }
-        
+
         _array[index] = item;
         Count++;
     }
@@ -133,13 +133,13 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveAt(int index)
     {
-        if ((uint)index > (uint)Count) 
+        if ((uint)index > (uint)Count)
         {
             throw new ArgumentOutOfRangeException(nameof(index));
         }
-        
+
         Count--;
-        if (index < Count) 
+        if (index < Count)
         {
             //Buffer.MemoryCopy(_array+(index+1), _array+index,Count-index,Count-index);
             UnsafeArray.Copy(ref _array, index + 1, ref _array, index, Count - index);
@@ -157,11 +157,11 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         var index = IndexOf(item);
         if (index < 0) return false;
-        
+
         RemoveAt(index);
         return true;
     }
-    
+
     /// <summary>
     ///     Checks if the item is containted in this <see cref="UnsafeList{T}"/> instance and returns its index.
     /// </summary>
@@ -170,16 +170,16 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int IndexOf(T item)
     {
-        for(var i = 0; i < Count; i++) 
+        for (var i = 0; i < Count; i++)
         {
-            if(EqualityComparer<T>.Default.Equals(_array[i], item)) 
+            if (EqualityComparer<T>.Default.Equals(_array[i], item))
             {
                 return i;
             }
         }
         return -1;
     }
-    
+
     /// <summary>
     ///     Checks if the item is containted in this <see cref="UnsafeList{T}"/> instance.
     /// </summary>
@@ -188,9 +188,9 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(T item)
     {
-        for(var i = 0; i < Count; i++) 
+        for (var i = 0; i < Count; i++)
         {
-            if(EqualityComparer<T>.Default.Equals(_array[i], item)) 
+            if (EqualityComparer<T>.Default.Equals(_array[i], item))
             {
                 return true;
             }
@@ -213,9 +213,9 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         if (arrayIndex + Count > array.Length)
             throw new ArgumentException("Destination array was not long enough. Check the destination index, length, and the array's lower bounds.", nameof(arrayIndex));
 
-        fixed(T* arrayPtr = array)
+        fixed (T* arrayPtr = array)
         {
-            global::System.Buffer.MemoryCopy(_array, arrayPtr+arrayIndex, array.Length * sizeof(T), Count * sizeof(T));
+            global::System.Buffer.MemoryCopy(_array, arrayPtr + arrayIndex, array.Length * sizeof(T), Count * sizeof(T));
         }
     }
 
@@ -230,18 +230,18 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         {
             return;
         }
-        
+
         var oldArray = _array;
-        var newArray = new UnsafeArray<T>(min);
-        
+        UnsafeArray<T> newArray = new UnsafeArray<T>(min);
+
         // Copy & Free
-        UnsafeArray.Copy(ref oldArray, 0, ref newArray,0, Count);
+        UnsafeArray.Copy(ref oldArray, 0, ref newArray, 0, Count);
         oldArray.Dispose();
 
         _array = newArray;
         Capacity = min;
     }
-    
+
     /// <summary>
     ///     Trims the capacity of this <see cref="UnsafeList{T}"/> to release unused memory.
     /// </summary>
@@ -249,16 +249,16 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     public void TrimExcess()
     {
         var oldArray = _array;
-        var newArray = new UnsafeArray<T>(Count);
-        
+        UnsafeArray<T> newArray = new UnsafeArray<T>(Count);
+
         // Copy & free
-        UnsafeArray.Copy(ref oldArray, 0, ref newArray,0, Count);
+        UnsafeArray.Copy(ref oldArray, 0, ref newArray, 0, Count);
         oldArray.Dispose();
-        
+
         _array = newArray;
         Capacity = Count;
     }
-    
+
     /// <summary>
     ///    Acesses an item at the index of the list. 
     /// </summary>
@@ -267,7 +267,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _array[CheckIndex(index)];
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => _array[CheckIndex(index)] = value;
     }
@@ -304,7 +304,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         Count = 0;
     }
-    
+
     /// <summary>
     ///     Disposes this instance and releases its memory. 
     /// </summary>
@@ -313,7 +313,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         _array.Dispose();
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeList{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
@@ -333,7 +333,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         return new UnsafeEnumerator<T>(_array, Count);
     }
-    
+
     /// <summary>
     ///     Creates an instance of a <see cref="IEnumerable{T}"/>.
     /// </summary>
@@ -395,7 +395,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         return !left.Equals(right);
     }
-    
+
     /// <summary>
     ///     Returns the hashcode of this <see cref="UnsafeList{T}"/>.
     /// </summary>
@@ -418,7 +418,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString()
     {
-        var items = new StringBuilder();
+        StringBuilder items = new StringBuilder();
         foreach (ref var item in this)
         {
             items.Append($"{item},");
@@ -443,7 +443,7 @@ internal class UnsafeListDebugView<T> where T : unmanaged
     {
         get
         {
-            var items = new T[_entity.Count];
+            T[] items = new T[_entity.Count];
             _entity.CopyTo(items, 0);
             return items;
         }

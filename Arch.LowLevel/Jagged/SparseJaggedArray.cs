@@ -17,7 +17,7 @@ public record struct SparseBucket<T>
     ///     The items array.
     /// </summary>
     internal T[] Array = global::System.Array.Empty<T>();
-    
+
     /// <summary>
     ///     The filler, the default value.
     /// </summary>
@@ -46,11 +46,11 @@ public record struct SparseBucket<T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private set;
     }
-    
+
     /// <summary>
     ///     The amount of items in this <see cref="Bucket{T}"/>.
     /// </summary>
@@ -83,7 +83,7 @@ public record struct SparseBucket<T>
         {
             return;
         }
-        
+
         Array = new T[Capacity];
         Clear();
     }
@@ -98,10 +98,10 @@ public record struct SparseBucket<T>
         {
             return;
         }
-        
+
         Array = global::System.Array.Empty<T>();
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -111,7 +111,7 @@ public record struct SparseBucket<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref Array.DangerousGetReferenceAt(i);
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="SparseBucket{T}"/> and sets all values to the <see cref="_filler"/>.
     /// </summary>
@@ -134,12 +134,12 @@ public class SparseJaggedArray<T>
     ///     The <see cref="Bucket{T}"/> size in items.
     /// </summary>
     private readonly int _bucketSize;
-    
+
     /// <summary>
     ///     The <see cref="Bucket{T}"/> size in items - 1.
     /// </summary>
     private readonly int _bucketSizeMinusOne;
-    
+
     /// <summary>
     ///     The <see cref="_bucketSize"/> is always a value the power of 2, therefore we can use a bitshift for the division during the index calculation. 
     /// </summary>
@@ -154,7 +154,7 @@ public class SparseJaggedArray<T>
     ///     The filler, the default value.
     /// </summary>
     private readonly T _filler;
-    
+
     /// <summary>
     ///     Creates an instance of the <see cref="JaggedArray{T}"/>.
     /// </summary>
@@ -165,14 +165,14 @@ public class SparseJaggedArray<T>
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
         _bucketSizeShift = (int)Math.Log(_bucketSize, 2);
-        _buckets = new Array<SparseBucket<T>>(capacity/_bucketSize + 1);
-        
+        _buckets = new Array<SparseBucket<T>>(capacity / _bucketSize + 1);
+
         _filler = default!;
 
         // Fill buckets
         for (var i = 0; i < _buckets.Length; i++)
         {
-            var bucket = new SparseBucket<T>(_bucketSize, _filler);
+            SparseBucket<T> bucket = new SparseBucket<T>(_bucketSize, _filler);
             SetBucket(i, in bucket);
             bucket.Clear();
         }
@@ -189,24 +189,24 @@ public class SparseJaggedArray<T>
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
         _bucketSizeShift = (int)Math.Log(_bucketSize, 2);
-        _buckets = new Array<SparseBucket<T>>(capacity/_bucketSize + 1);
-        
+        _buckets = new Array<SparseBucket<T>>(capacity / _bucketSize + 1);
+
         _filler = filler!;
 
         // Fill buckets
         for (var i = 0; i < _buckets.Length; i++)
         {
-            var bucket = new SparseBucket<T>(_bucketSize, filler);
+            SparseBucket<T> bucket = new SparseBucket<T>(_bucketSize, filler);
             SetBucket(i, in bucket);
             bucket.Clear();
         }
     }
-    
+
     /// <summary>
     ///     If true, each bucket will stay empty and will not allocate memory until its actually being used. 
     /// </summary>
     public bool Sparse { get; set; }
-    
+
     /// <summary>
     ///     The capacity, the total amount of items. 
     /// </summary>
@@ -226,7 +226,7 @@ public class SparseJaggedArray<T>
     public void Add(int index, in T item)
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         ref var bucket = ref GetBucket(bucketIndex);
         bucket.EnsureCapacity();
         bucket[itemIndex] = item;
@@ -241,10 +241,10 @@ public class SparseJaggedArray<T>
     public void Remove(int index)
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         ref var bucket = ref GetBucket(bucketIndex);
         bucket[itemIndex] = _filler;
-   
+
         bucket.Count--;
         bucket.TrimExcess();
     }
@@ -266,7 +266,7 @@ public class SparseJaggedArray<T>
         }
 
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         // Bucket empty? return false
         ref var bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
@@ -274,7 +274,7 @@ public class SparseJaggedArray<T>
             value = _filler;
             return false;
         }
-        
+
         // If the item is the default then the nobody set its value.
         ref var item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
@@ -286,7 +286,7 @@ public class SparseJaggedArray<T>
         value = item;
         return true;
     }
-    
+
     /// <summary>
     ///     Trys to get an item from its index.
     /// </summary>
@@ -300,29 +300,29 @@ public class SparseJaggedArray<T>
         if (index < 0 || index >= Capacity)
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
-        
+
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         // Bucket empty? return false
         ref var bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
-        
+
         // If the item is the default then the nobody set its value.
         ref var item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
 
         @bool = true;
-        return ref item!; 
+        return ref item!;
     }
 
     /// <summary>
@@ -337,9 +337,9 @@ public class SparseJaggedArray<T>
         {
             return false;
         }
-        
+
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
         // If bucket empty return false
         ref var bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
@@ -370,7 +370,7 @@ public class SparseJaggedArray<T>
 
         for (var i = length; i < _buckets.Length; i++)
         {
-            var bucket = new SparseBucket<T>(_bucketSize, _filler);
+            SparseBucket<T> bucket = new SparseBucket<T>(_bucketSize, _filler);
             SetBucket(i, bucket);
             bucket.Clear();
         }
@@ -384,7 +384,7 @@ public class SparseJaggedArray<T>
     {
         // Count how many of the last buckets are empty, to trim them
         var count = 0;
-        for (var i = _buckets.Length-1; i >= 0; i--)
+        for (var i = _buckets.Length - 1; i >= 0; i--)
         {
             ref var bucket = ref GetBucket(i);
             if (!bucket.IsEmpty)
@@ -395,7 +395,7 @@ public class SparseJaggedArray<T>
             count++;
         }
 
-        var buckets = _buckets.Length-count;
+        var buckets = _buckets.Length - count;
         _buckets = Array.Resize(ref _buckets, buckets);
     }
 
@@ -414,7 +414,7 @@ public class SparseJaggedArray<T>
         bucketIndex = id >> _bucketSizeShift;
         itemIndex = id & _bucketSizeMinusOne;
     }
-    
+
     /// <summary>
     ///     Returns the <see cref="SparseBucket{T}"/> from the <see cref="_buckets"/> at the given index.
     /// </summary>
@@ -425,7 +425,7 @@ public class SparseJaggedArray<T>
     {
         return ref _buckets[index];
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="SparseBucket{T}"/> of the <see cref="_buckets"/> at the given index.
     /// </summary>
@@ -436,7 +436,7 @@ public class SparseJaggedArray<T>
     {
         _buckets[index] = bucket;
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -450,7 +450,7 @@ public class SparseJaggedArray<T>
             return ref GetBucket(bucketIndex)[itemIndex];
         }
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="SparseJaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
     /// </summary>
@@ -463,7 +463,7 @@ public class SparseJaggedArray<T>
             {
                 continue;
             }
-            
+
             bucket.Clear();
         }
     }
