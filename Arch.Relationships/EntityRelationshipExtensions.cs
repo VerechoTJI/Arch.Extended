@@ -22,10 +22,10 @@ public static class EntityRelationshipExtensions
     /// <param name="relationship">The relationship instance.</param>
     public static void AddRelationship<T>(this in Entity source, Entity target, T relationship = default!)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         world.AddRelationship(source, target, relationship);
     }
-    
+
     /// <summary>
     ///     Sets a relationship to the <see cref="Entity"/> by updating its relationship data.
     /// </summary>
@@ -35,7 +35,7 @@ public static class EntityRelationshipExtensions
     /// <param name="relationship">The relationship instance.</param>
     public static void SetRelationship<T>(this in Entity source, Entity target, T relationship = default!)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         world.SetRelationship(source, target, relationship);
     }
 
@@ -49,10 +49,10 @@ public static class EntityRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool HasRelationship<T>(this in Entity source, Entity target)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         return world.HasRelationship<T>(source, target);
     }
-    
+
     /// <summary>
     ///     Checks if an <see cref="Entity"/> has a certain relationship.
     /// </summary>
@@ -62,10 +62,10 @@ public static class EntityRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool HasRelationship<T>(this in Entity source)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         return world.HasRelationship<T>(source);
     }
-    
+
     /// <summary>
     ///     Returns a relationship of an <see cref="Entity"/>.
     /// </summary>
@@ -76,10 +76,10 @@ public static class EntityRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T GetRelationship<T>(this in Entity source, Entity target)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         return world.GetRelationship<T>(source, target);
     }
-    
+
     /// <summary>
     ///     Returns a relationship of an <see cref="Entity"/>.
     /// </summary>
@@ -89,10 +89,10 @@ public static class EntityRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref Relationship<T> GetRelationships<T>(this in Entity source)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         return ref world.GetRelationships<T>(source);
     }
-    
+
     /// <summary>
     ///     Tries to return an <see cref="Entity"/>s relationship of the specified type.
     ///     Will copy the relationship if its a struct.
@@ -105,10 +105,10 @@ public static class EntityRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool TryGetRelationship<T>(this in Entity source, Entity target, out T relationship)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         return world.TryGetRelationship(source, target, out relationship);
     }
-    
+
     /// <summary>
     ///     Removes a relationship from an <see cref="Entity"/>.
     /// </summary>
@@ -117,7 +117,7 @@ public static class EntityRelationshipExtensions
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     public static void RemoveRelationship<T>(this in Entity source, Entity target)
     {
-        var world = World.Worlds[source.WorldId];
+        World world = World.Worlds[source.WorldId];
         world.RemoveRelationship<T>(source, target);
     }
 }

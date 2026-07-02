@@ -30,12 +30,12 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
         {
             throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be greater than 0.");
         }
-        
+
         _queue = new UnsafeArray<T>(capacity);
         _capacity = capacity;
-        _frontIndex =  _count = 0;
+        _frontIndex = _count = 0;
     }
-    
+
     /// <summary>
     ///     The amount of items in the queue.
     /// </summary>
@@ -66,7 +66,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
             EnsureCapacity(_capacity * 2);
         }
 
-        var itemOffset = (_frontIndex + _count) % _capacity;
+        int itemOffset = (_frontIndex + _count) % _capacity;
         _queue[itemOffset] = item;
         _count++;
     }
@@ -84,7 +84,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
             throw new InvalidOperationException("Queue is empty");
         }
 
-        var item = Peek();
+        T item = Peek();
         _frontIndex = (_frontIndex + 1) % _capacity;
         _count--;
         return item;
@@ -105,14 +105,14 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
 
         return ref _queue[_frontIndex];
     }
-    
+
     /// <summary>
     ///     Trims this instance and releases memory in this process.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TrimExcess()
     {
-        var newCapacity = _count;
+        int newCapacity = _count;
         SetCapacity(newCapacity);
     }
 
@@ -145,11 +145,11 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
             throw new ArgumentOutOfRangeException(nameof(newCapacity), "newCapacity cannot be smaller than _count");
         }
 
-        var newBuffer = new UnsafeArray<T>(newCapacity);
+        UnsafeArray<T> newBuffer = new UnsafeArray<T>(newCapacity);
         if (_count > 0)
         {
-            var firstChunkCount = Math.Min(_count, _capacity - _frontIndex);
-            var secondChunkCount = _count - firstChunkCount;
+            int firstChunkCount = Math.Min(_count, _capacity - _frontIndex);
+            int secondChunkCount = _count - firstChunkCount;
 
             // Copy elements in front->rear order to the new buffer
             if (firstChunkCount > 0)
@@ -162,9 +162,9 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
                 UnsafeArray.Copy(ref _queue, 0, ref newBuffer, firstChunkCount, secondChunkCount);
             }
         }
-        
+
         _queue.Dispose();
-        
+
         _queue = newBuffer;
         _capacity = newCapacity;
         _frontIndex = 0;
@@ -186,9 +186,9 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     public void Dispose()
     {
         _queue.Dispose();
-        _capacity = _frontIndex  = _count = 0;
+        _capacity = _frontIndex = _count = 0;
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeQueue{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
@@ -199,7 +199,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     {
         return new Span<T>(_queue, Count);
     }
-    
+
     /// <summary>
     ///     Creates an instance of a <see cref="UnsafeEnumerator{T}"/> for ref acessing the list content.
     /// </summary>
@@ -229,7 +229,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     {
         return new UnsafeIEnumerator<T>(_queue, Count);
     }
-    
+
     /// <summary>
     ///     Converts this <see cref="UnsafeStack{T}"/> to a string.
     /// </summary>
@@ -237,8 +237,8 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString()
     {
-        var items = new StringBuilder();
-        foreach (ref var item in this)
+        StringBuilder items = new StringBuilder();
+        foreach (ref T item in this)
         {
             items.Append($"{item},");
         }
@@ -261,7 +261,7 @@ internal class UnsafeQueueDebugView<T> where T : unmanaged
     {
         get
         {
-            var items = new T[_entity.Count];
+            T[] items = new T[_entity.Count];
             _entity.AsSpan().CopyTo(items);
             return items;
         }

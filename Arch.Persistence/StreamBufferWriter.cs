@@ -13,22 +13,22 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
     ///     The buffer.
     /// </summary>
     private byte[] _buffer;
-    
+
     /// <summary>
     ///     The <see cref="Stream"/>.
     /// </summary>
     private readonly Stream _destination;
-    
+
     /// <summary>
     ///     If this instance owns the <see cref="_destination"/> stream.
     /// </summary>
     private readonly bool _ownsStream;
-    
+
     /// <summary>
     ///     The current position and the amount of total leased bytes. 
     /// </summary>
     private int _position, _leased;
-    
+
     /// <summary>
     ///     Creates a new <see cref="StreamBufferWriter"/> instance.
     /// </summary>
@@ -42,12 +42,12 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
         {
             bufferSize = minBufferSize;
         }
-        
+
         _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
         _ownsStream = ownsStream;
         _destination = destination;
     }
-    
+
     /// <summary>
     ///     Leases an amount of bytes from the <see cref="_buffer"/>.
     /// </summary>
@@ -55,7 +55,7 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
     /// <returns>The leased amount.</returns>
     private int Lease(int sizeHint)
     {
-        var available = _buffer.Length - _position;
+        int available = _buffer.Length - _position;
         if (available < sizeHint && _position != 0)
         {   // try to get more
             Flush();
@@ -65,7 +65,7 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
         _leased = available;
         return available;
     }
-    
+
     /// <summary>
     ///     Flushes the buffered bytes to the <see cref="_destination"/>.
     /// </summary>
@@ -94,7 +94,7 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
         _position += count;
         _leased = 0;
     }
-    
+
     /// <summary>
     ///     Returns a partion of the <see cref="_buffer"/> as a <see cref="Memory{T}"/>.
     /// </summary>
@@ -102,7 +102,7 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
     /// <returns>The new <see cref="Memory{T}"/> instance.</returns>
     Memory<byte> IBufferWriter<byte>.GetMemory(int sizeHint)
     {
-        var actual = Lease(sizeHint);
+        int actual = Lease(sizeHint);
         return new Memory<byte>(_buffer, _position, actual);
     }
 
@@ -113,18 +113,18 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
     /// <returns>The new <see cref="Span{T}"/> instance.</returns>
     Span<byte> IBufferWriter<byte>.GetSpan(int sizeHint)
     {
-        var actual = Lease(sizeHint);
+        int actual = Lease(sizeHint);
         return new Span<byte>(_buffer, _position, actual);
     }
-    
+
     /// <summary>
     ///     Disposes this instance, flushes and releases all memory. 
     /// </summary>
     public void Dispose()
     {
         Flush(true);
-        
-        var tmp = _buffer;
+
+        byte[] tmp = _buffer;
         _buffer = null!;
         ArrayPool<byte>.Shared.Return(tmp);
 

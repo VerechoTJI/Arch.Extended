@@ -5,7 +5,7 @@ using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 
-[assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
+[assembly: InternalsVisibleTo("Arch.Relationships.Tests")]
 namespace Arch.Relationships;
 
 /// <summary>
@@ -14,7 +14,7 @@ namespace Arch.Relationships;
 /// </summary>
 public static class WorldRelationshipExtensions
 {
-    
+
 #if EVENTS
     
     /// <summary>
@@ -80,11 +80,11 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
-        ref var buffer = ref world.AddOrGetRelationships<T>(source);
+        ref Relationship<T> buffer = ref world.AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
 
-        var targetComp = new InRelationship(Component<Relationship<T>>.ComponentType);
-        ref var targetBuffer = ref world.AddOrGetRelationships<InRelationship>(target);
+        InRelationship targetComp = new InRelationship(Component<Relationship<T>>.ComponentType);
+        ref Relationship<InRelationship> targetBuffer = ref world.AddOrGetRelationships<InRelationship>(target);
         targetBuffer.Add(in targetComp, source);
     }
 
@@ -100,7 +100,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T AddOrGetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
-        ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
+        ref Relationship<T> relationships = ref world.TryGetRefRelationships<T>(source, out bool exists);
         if (exists)
         {
             return relationships.Get(target);
@@ -120,7 +120,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ref Relationship<T> AddOrGetRelationships<T>(this World world, Entity source)
     {
-        ref var component = ref world.TryGetRef<Relationship<T>>(source, out var exists);
+        ref Relationship<T> component = ref world.TryGetRef<Relationship<T>>(source, out bool exists);
         if (exists)
         {
             return ref component!;
@@ -141,7 +141,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
-        ref var relationships = ref world.GetRelationships<T>(source);
+        ref Relationship<T> relationships = ref world.GetRelationships<T>(source);
         relationships.Set(target, relationship);
     }
 
@@ -156,7 +156,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool HasRelationship<T>(this World world, Entity source, Entity target)
     {
-        ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
+        ref Relationship<T> relationships = ref world.TryGetRefRelationships<T>(source, out bool exists);
         if (!exists)
         {
             return false;
@@ -189,7 +189,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T GetRelationship<T>(this World world, Entity source, Entity target)
     {
-        ref var relationships = ref world.GetRelationships<T>(source);
+        ref Relationship<T> relationships = ref world.GetRelationships<T>(source);
         return relationships.Get(target);
     }
 
@@ -206,7 +206,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool TryGetRelationship<T>(this World world, Entity source, Entity target, out T relationship)
     {
-        ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
+        ref Relationship<T> relationships = ref world.TryGetRefRelationships<T>(source, out bool exists);
         if (!exists)
         {
             relationship = default!;
@@ -268,7 +268,7 @@ public static class WorldRelationshipExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveRelationship<T>(this World world, Entity source, Entity target)
     {
-        ref var buffer = ref world.GetRelationships<T>(source);
+        ref Relationship<T> buffer = ref world.GetRelationships<T>(source);
         buffer.Remove(target);
 
         if (buffer.Count == 0)
@@ -276,7 +276,7 @@ public static class WorldRelationshipExtensions
             world.Remove<Relationship<T>>(source);
         }
 
-        ref var targetBuffer = ref world.GetRelationships<InRelationship>(target);
+        ref Relationship<InRelationship> targetBuffer = ref world.GetRelationships<InRelationship>(target);
         targetBuffer.Remove(source);
 
         if (targetBuffer.Count == 0)

@@ -12,7 +12,7 @@ namespace Arch.Relationships;
 ///     is a enumerator to enumerate a passed <see cref="SortedList{TKey,TValue}"/> in an efficient way. 
 /// </summary>
 /// <typeparam name="TValue"></typeparam>
-public struct SortedListEnumerator<TValue> 
+public struct SortedListEnumerator<TValue>
 {
     private SortedList<Entity, TValue> sortedList;
     private int currentIndex;
@@ -36,13 +36,13 @@ public struct SortedListEnumerator<TValue>
         {
             if (currentIndex == -1 || currentIndex >= sortedList.Count)
                 throw new InvalidOperationException();
-                
-            var key = sortedList.Keys[currentIndex];
-            var value = sortedList.Values[currentIndex];
+
+            Entity key = sortedList.Keys[currentIndex];
+            TValue value = sortedList.Values[currentIndex];
             return new KeyValuePair<Entity, TValue>(key, value);
         }
     }
-    
+
     /// <summary>
     /// Moves to the next element in the enumerator.
     /// </summary>

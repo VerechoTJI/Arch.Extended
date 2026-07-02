@@ -12,12 +12,12 @@ namespace Arch.LowLevel.Jagged;
 /// <typeparam name="T"></typeparam>
 public record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
 {
-    
+
     /// <summary>
     ///     The items array.
     /// </summary>
     internal UnsafeArray<T> Array = UnsafeArray.Empty<T>();
-    
+
     /// <summary>
     ///     The filler, the default value.
     /// </summary>
@@ -47,11 +47,11 @@ public record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private set;
     }
-    
+
     /// <summary>
     ///     The amount of items in this <see cref="Bucket{T}"/>.
     /// </summary>
@@ -84,7 +84,7 @@ public record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
         {
             return;
         }
-        
+
         Array = new UnsafeArray<T>(Capacity);
         Clear();
     }
@@ -99,10 +99,10 @@ public record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
         {
             return;
         }
-        
+
         Array = UnsafeArray.Empty<T>();
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -112,7 +112,7 @@ public record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref Array[i];
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="UnsafeSparseBucket{T}"/> and sets all values to the <see cref="_filler"/>.
     /// </summary>
@@ -150,7 +150,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
     ///     The <see cref="Bucket{T}"/> size in items - 1.
     /// </summary>
     private readonly int _bucketSizeMinusOne;
-    
+
     /// <summary>
     ///     The <see cref="_bucketSize"/> is always a value the power of 2, therefore we can use a bitshift for the division during the index calculation. 
     /// </summary>
@@ -181,9 +181,9 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         _filler = default!;
 
         // Fill buckets
-        for (var i = 0; i < _bucketArray.Length; i++)
+        for (int i = 0; i < _bucketArray.Length; i++)
         {
-            var bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
+            UnsafeSparseBucket<T> bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
             SetBucket(i, in bucket);
             bucket.Clear();
         }
@@ -205,9 +205,9 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         _filler = filler!;
 
         // Fill buckets
-        for (var i = 0; i < _bucketArray.Length; i++)
+        for (int i = 0; i < _bucketArray.Length; i++)
         {
-            var bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
+            UnsafeSparseBucket<T> bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
             SetBucket(i, in bucket);
             bucket.Clear();
         }
@@ -236,9 +236,9 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index, in T item)
     {
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
+        IndexToSlot(index, out int bucketIndex, out int itemIndex);
 
-        ref var bucket = ref GetBucket(bucketIndex);
+        ref UnsafeSparseBucket<T> bucket = ref GetBucket(bucketIndex);
         bucket.EnsureCapacity();
         bucket[itemIndex] = item;
         bucket.Count++;
@@ -251,9 +251,9 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(int index)
     {
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
+        IndexToSlot(index, out int bucketIndex, out int itemIndex);
 
-        ref var bucket = ref GetBucket(bucketIndex);
+        ref UnsafeSparseBucket<T> bucket = ref GetBucket(bucketIndex);
         bucket[itemIndex] = _filler;
 
         bucket.Count--;
@@ -275,11 +275,11 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
             value = _filler;
             return false;
         }
-        
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
+        IndexToSlot(index, out int bucketIndex, out int itemIndex);
+
         // Bucket empty? return false
-        ref var bucket = ref GetBucket(bucketIndex);
+        ref UnsafeSparseBucket<T> bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
         {
             value = _filler;
@@ -287,7 +287,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         }
 
         // If the item is the default then the nobody set its value.
-        ref var item = ref bucket[itemIndex];
+        ref T item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             value = _filler;
@@ -297,7 +297,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         value = item;
         return true;
     }
-    
+
     /// <summary>
     ///     Trys to get an item from its index.
     /// </summary>
@@ -311,29 +311,29 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         if (index < 0 || index >= Capacity)
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
-        
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
+        IndexToSlot(index, out int bucketIndex, out int itemIndex);
+
         // Bucket empty? return false
-        ref var bucket = ref GetBucket(bucketIndex);
+        ref UnsafeSparseBucket<T> bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
-        
+
         // If the item is the default then the nobody set its value.
-        ref var item = ref bucket[itemIndex];
+        ref T item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             @bool = false;
-            return ref Unsafe.NullRef<T>(); 
+            return ref Unsafe.NullRef<T>();
         }
 
         @bool = true;
-        return ref item; 
+        return ref item;
     }
 
     /// <summary>
@@ -348,18 +348,18 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         {
             return false;
         }
-    
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        
+
+        IndexToSlot(index, out int bucketIndex, out int itemIndex);
+
         // If bucket empty return false
-        ref var bucket = ref GetBucket(bucketIndex);
+        ref UnsafeSparseBucket<T> bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
         {
             return false;
         }
 
         // If the item is the default then the nobody set its value.
-        ref var item = ref bucket[itemIndex];
+        ref T item = ref bucket[itemIndex];
         return !EqualityComparer<T>.Default.Equals(item, _filler);
     }
 
@@ -375,13 +375,13 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
             return;
         }
 
-        var length = Buckets;
-        var buckets = newCapacity / _bucketSize + 1;
+        int length = Buckets;
+        int buckets = newCapacity / _bucketSize + 1;
         _bucketArray = UnsafeArray.Resize(ref _bucketArray, buckets);
 
-        for (var i = length; i < _bucketArray.Length; i++)
+        for (int i = length; i < _bucketArray.Length; i++)
         {
-            var bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
+            UnsafeSparseBucket<T> bucket = new UnsafeSparseBucket<T>(_bucketSize, _filler);
             SetBucket(i, in bucket);
             bucket.Clear();
         }
@@ -394,10 +394,10 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
     public void TrimExcess()
     {
         // Count how many of the last buckets are empty, to trim them
-        var count = 0;
-        for (var i = _bucketArray.Length - 1; i >= 0; i--)
+        int count = 0;
+        for (int i = _bucketArray.Length - 1; i >= 0; i--)
         {
-            ref var bucket = ref _bucketArray[i];
+            ref UnsafeSparseBucket<T> bucket = ref _bucketArray[i];
             if (!bucket.IsEmpty)
             {
                 break;
@@ -406,7 +406,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
             count++;
         }
 
-        var buckets = _bucketArray.Length - count;
+        int buckets = _bucketArray.Length - count;
         _bucketArray = UnsafeArray.Resize(ref _bucketArray, buckets);
     }
 
@@ -425,7 +425,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         bucketIndex = id >> _bucketSizeShift;
         itemIndex = id & _bucketSizeMinusOne;
     }
-    
+
     /// <summary>
     ///     Returns the <see cref="UnsafeSparseBucket{T}"/> from the <see cref="_bucketArray"/> at the given index.
     /// </summary>
@@ -448,7 +448,7 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
     {
         _bucketArray[index] = bucket;
     }
-    
+
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -458,35 +458,35 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            IndexToSlot(i, out var bucketIndex, out var itemIndex);
+            IndexToSlot(i, out int bucketIndex, out int itemIndex);
             return ref GetBucket(bucketIndex)[itemIndex];
         }
     }
-    
+
     /// <summary>
     ///     Clears this <see cref="UnsafeSparseJaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach (ref var bucket in _bucketArray)
+        foreach (ref UnsafeSparseBucket<T> bucket in _bucketArray)
         {
             if (bucket.IsEmpty)
             {
                 continue;
             }
-            
+
             UnsafeArray.Fill(ref bucket.Array, _filler);
         }
     }
-    
+
     /// <summary>
     ///     Disposes this <see cref="UnsafeSparseJaggedArray{T}"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        foreach (ref var bucket in _bucketArray)
+        foreach (ref UnsafeSparseBucket<T> bucket in _bucketArray)
         {
             bucket.Dispose();
         }
