@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -236,7 +236,7 @@ public unsafe struct UnsafeArray
         var bytes = size * length;
         var sourcePtr = (void*)(source._ptr + index);
         var destinationPtr = (void*)(destination._ptr + destinationIndex);
-        Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
+        global::System.Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
     }
 
 

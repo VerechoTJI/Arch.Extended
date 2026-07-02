@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -215,7 +215,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
 
         fixed(T* arrayPtr = array)
         {
-            Buffer.MemoryCopy(_array, arrayPtr+arrayIndex, array.Length * sizeof(T), Count * sizeof(T));
+            global::System.Buffer.MemoryCopy(_array, arrayPtr+arrayIndex, array.Length * sizeof(T), Count * sizeof(T));
         }
     }
 

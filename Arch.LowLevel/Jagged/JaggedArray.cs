@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
@@ -45,7 +45,7 @@ public record struct Bucket<T>
     /// <summary>
     ///     The items array.
     /// </summary>
-    internal readonly T[] Array = System.Array.Empty<T>();
+    internal readonly T[] Array = global::System.Array.Empty<T>();
     
     /// <summary>
     ///     Creates an instance of the <see cref="Bucket{T}"/>.

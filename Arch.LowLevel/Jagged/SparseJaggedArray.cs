@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance;
+using global::System;
+using global::System.Diagnostics;
+using global::System.Runtime.CompilerServices;
 
 namespace Arch.LowLevel.Jagged;
-
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 /// <summary>
 ///     The <see cref="SparseBucket{T}"/> struct
@@ -16,7 +16,7 @@ public record struct SparseBucket<T>
     /// <summary>
     ///     The items array.
     /// </summary>
-    internal T[] Array = System.Array.Empty<T>();
+    internal T[] Array = global::System.Array.Empty<T>();
     
     /// <summary>
     ///     The filler, the default value.
@@ -79,7 +79,7 @@ public record struct SparseBucket<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void EnsureCapacity()
     {
-        if (Array != System.Array.Empty<T>())
+        if (Array != global::System.Array.Empty<T>())
         {
             return;
         }
@@ -99,7 +99,7 @@ public record struct SparseBucket<T>
             return;
         }
         
-        Array = System.Array.Empty<T>();
+        Array = global::System.Array.Empty<T>();
     }
     
     /// <summary>
